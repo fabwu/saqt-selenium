@@ -44,7 +44,7 @@ public class Main {
 
             String paragraphText = removeWrongLinksFromParagraph(firstParagraph);
 
-            List<WebElement> links = firstParagraph.findElements(By.tagName("a"));
+            List<WebElement> links = firstParagraph.findElements(By.cssSelector("p > a"));
 
             links.stream()
                     .filter(link -> paragraphText.contains(link.getText()))

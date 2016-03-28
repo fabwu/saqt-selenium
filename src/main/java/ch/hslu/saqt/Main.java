@@ -1,36 +1,46 @@
 package ch.hslu.saqt;
 
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.support.ui.ExpectedCondition;
-import org.openqa.selenium.support.ui.SystemClock;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
  * Choose a random page on Wikipedia and select first link that is not italic and not in braces. Select a link until
  * the page title is Philosophie.
  */
-public class Wikipedia {
+public class Main {
+
+    @Parameter(names = {"--url", "-u"})
+    private String url = "https://de.wikipedia.org/wiki/Tee";
+
+    @Parameter(names = {"--trials", "-t"})
+    private int maxTrials = 10;
+
     public static void main(String[] args) {
+        Main main = new Main();
+        new JCommander(main, args);
+        main.run();
+    }
+
+    private void run() {
         WebDriver driver = new FirefoxDriver();
 
-        driver.navigate().to("https://de.wikipedia.org/wiki/Tee");
+        driver.navigate().to(url);
 
         String title = driver.getTitle();
         int trials = 0;
-        int maxTrials = 10;
 
         System.out.println("Start bei: " + title + System.lineSeparator());
 
         while (trials < maxTrials && !title.equals("Philosophie – Wikipedia")) {
-            WebElement firstParagraph = driver.findElement(By.cssSelector("#mw-content-text p"));
+            WebElement firstParagraph = driver.findElement(By.cssSelector("#mw-content-text > p"));
 
             String paragraphText = removeWrongLinksFromParagraph(firstParagraph);
 
@@ -48,7 +58,7 @@ public class Wikipedia {
 
         System.out.println();
 
-        if (trials ==  maxTrials) {
+        if (trials == maxTrials) {
             System.out.println("Es gibt keinen Pfad :(");
         } else {
             System.out.println("Suche erfolgreich abgeschlossen :)");
@@ -57,10 +67,7 @@ public class Wikipedia {
         driver.quit();
     }
 
-    private static String removeWrongLinksFromParagraph(WebElement element) {
-        String text = element.getAttribute("innerHTML");
-        System.out.println(text);
-        String textWithoutBraces = Arrays.stream(text.split(" \\(((?!\\)).)*\\) ")).collect(Collectors.joining(" "));
-        return textWithoutBraces;
+    private String removeWrongLinksFromParagraph(WebElement element) {
+        return Arrays.stream(element.getText().split(" \\(((?!\\)).)*\\) ")).collect(Collectors.joining(" "));
     }
 }

@@ -2,14 +2,6 @@ package ch.hslu.saqt;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.firefox.FirefoxDriver;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Choose a random page on Wikipedia and select first link that is not italic and not in braces. Select a link until
@@ -17,10 +9,10 @@ import java.util.stream.Collectors;
  */
 public class Main {
 
-    @Parameter(names = {"--url", "-u"})
-    private String url = "https://de.wikipedia.org/wiki/Tee";
+    @Parameter(names = {"--term", "-t"})
+    private String term = "https://de.wikipedia.org/wiki/Tee";
 
-    @Parameter(names = {"--trials", "-t"})
+    @Parameter(names = {"--max-trials", "-m"})
     private int maxTrials = 10;
 
     public static void main(String[] args) {
@@ -30,31 +22,10 @@ public class Main {
     }
 
     private void run() {
-        WebDriver driver = new FirefoxDriver();
+        System.out.println("Start bei: " + term + System.lineSeparator());
 
-        driver.navigate().to(url);
-
-        String title = driver.getTitle();
-        int trials = 0;
-
-        System.out.println("Start bei: " + title + System.lineSeparator());
-
-        while (trials < maxTrials && !title.equals("Philosophie – Wikipedia")) {
-            WebElement firstParagraph = driver.findElement(By.cssSelector("#mw-content-text > p"));
-
-            String paragraphText = removeWrongLinksFromParagraph(firstParagraph);
-
-            List<WebElement> links = firstParagraph.findElements(By.cssSelector("p > a"));
-
-            links.stream()
-                    .filter(link -> paragraphText.contains(link.getText()))
-                    .findFirst()
-                    .ifPresent(WebElement::click);
-
-            title = driver.getTitle();
-            trials++;
-            System.out.println("Versuch " + trials + " von " + maxTrials + ": " + title);
-        }
+        Path path = new Path(maxTrials);
+        int trials = path.find(term);
 
         System.out.println();
 
@@ -64,10 +35,6 @@ public class Main {
             System.out.println("Suche erfolgreich abgeschlossen :)");
         }
 
-        driver.quit();
     }
 
-    private String removeWrongLinksFromParagraph(WebElement element) {
-        return Arrays.stream(element.getText().split(" \\(((?!\\)).)*\\) ")).collect(Collectors.joining(" "));
-    }
 }

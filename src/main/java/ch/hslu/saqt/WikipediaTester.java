@@ -12,14 +12,14 @@ import java.util.stream.Collectors;
 /**
  * A path to philosophy.
  */
-public class Path {
+public class WikipediaTester {
 
     private static final String BASE_URL = "https://de.wikipedia.org/wiki/";
 
     private final WebDriver driver;
     private final int maxTrials;
 
-    public Path(int maxTrials) {
+    public WikipediaTester(int maxTrials) {
         this.maxTrials = maxTrials;
         driver = new FirefoxDriver();
     }
@@ -30,7 +30,7 @@ public class Path {
      * @param term Start term
      * @return How many tries it takes to get to philosophy.
      */
-    public int find(String term) {
+    public Result find(String term) {
         String url = BASE_URL + term;
         driver.navigate().to(url);
 
@@ -54,9 +54,11 @@ public class Path {
             System.out.println("Versuch " + trials + " von " + maxTrials + ": " + title);
         }
 
-        driver.quit();
+        return new Result(term, trials, trials < maxTrials);
+    }
 
-        return trials;
+    public void finish() {
+        driver.quit();
     }
 
     private String removeWrongLinksFromParagraph(WebElement element) {
